@@ -20,6 +20,7 @@ public class DefaultCardAssigner implements CardAssigner {
      */
     private static final Map<Long, Set<Card>> USER_TO_CARDS = new ConcurrentHashMap<>();
     private static final Album ALBUM = new ConfigurationProviderImpl().get();
+    private static final List<Long> FINISHED_SETS_ID = new ArrayList<>();
     private final Object lock = new Object();
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -57,7 +58,7 @@ public class DefaultCardAssigner implements CardAssigner {
     private void publishEvents(long userId, Set<Card> userCards) {
         ALBUM.getSets().forEach(albumSet -> {
             boolean albumSetIsFull = userCards.containsAll(albumSet.getCards());
-            if (albumSetIsFull) {
+            if (albumSetIsFull && !FINISHED_SETS_ID.contains(albumSet.getId())) {
                 processSetIsFull(userId, userCards, albumSet);
             }
         });
@@ -65,6 +66,7 @@ public class DefaultCardAssigner implements CardAssigner {
 
     private void processSetIsFull(long userId, Set<Card> userCards, AlbumSet albumSet) {
         publishSetIsFullEvent(userId);
+        FINISHED_SETS_ID.add(albumSet.getId());
         checkFullAlbum(userId, userCards, albumSet);
     }
 
@@ -80,7 +82,6 @@ public class DefaultCardAssigner implements CardAssigner {
                 .type(Event.Type.ALBUM_FINISHED)
                 .userId(userId)
                 .build()));
-        System.out.println("album");
     }
 
     private void publishSetIsFullEvent(long userId) {
@@ -88,7 +89,6 @@ public class DefaultCardAssigner implements CardAssigner {
                 .type(Event.Type.SET_FINISHED)
                 .userId(userId)
                 .build()));
-        System.out.println("set");
     }
 
     @Override

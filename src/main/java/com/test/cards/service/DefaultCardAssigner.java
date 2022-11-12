@@ -21,12 +21,11 @@ public class DefaultCardAssigner implements CardAssigner {
     private static final Map<Long, Set<Card>> USER_TO_CARDS = new ConcurrentHashMap<>();
     private static final Album ALBUM = new ConfigurationProviderImpl().get();
     private static final List<Long> FINISHED_SETS_ID = new ArrayList<>();
+    private static final int COUNT_OF_THREADS = 2;
+
     private final Object lock = new Object();
-
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
-
+    private final ExecutorService executorService = Executors.newFixedThreadPool(COUNT_OF_THREADS);
     private final List<Consumer<Event>> consumers = new ArrayList<>();
-
 
     /**
      * Create sets of cards for future checks to not recreate it every time.
@@ -53,6 +52,11 @@ public class DefaultCardAssigner implements CardAssigner {
             stateOfUserCards = Collections.unmodifiableSet(userCards);
             publishEvents(userId, stateOfUserCards);
         }
+    }
+
+    @Override
+    public void subscribe(Consumer<Event> consumer) {
+        consumers.add(consumer);
     }
 
     private void publishEvents(long userId, Set<Card> userCards) {
@@ -91,8 +95,4 @@ public class DefaultCardAssigner implements CardAssigner {
                 .build()));
     }
 
-    @Override
-    public void subscribe(Consumer<Event> consumer) {
-        consumers.add(consumer);
-    }
 }

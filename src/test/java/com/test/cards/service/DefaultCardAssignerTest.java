@@ -4,16 +4,15 @@ import com.test.cards.domain.Event;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.LongStream;
 
 public class DefaultCardAssignerTest {
+
     private final CardAssigner cardAssigner = new DefaultCardAssigner();
-    private ExecutorService executorService = Executors.newFixedThreadPool(5);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     private static final long USER_ID = 1;
 
